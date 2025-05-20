@@ -1,0 +1,65 @@
+package com.engineeringdigest.SB2_journalApp.service;
+
+import com.engineeringdigest.SB2_journalApp.entity.JournalObject;
+import com.engineeringdigest.SB2_journalApp.repository.journalEntryRepository;
+import com.sun.jdi.request.MethodEntryRequest;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Component
+public class journalEntryService {
+
+    @Autowired
+    journalEntryRepository EntryRepository;
+
+
+
+    public void addJournalEntry(JournalObject newJournal) {
+        newJournal.setDate(LocalDateTime.now());
+        EntryRepository.save(newJournal);
+    }
+
+    public List<JournalObject> getAllJournalEntries() {
+        return EntryRepository.findAll();
+    }
+
+    public JournalObject getJournalEntry(ObjectId id) {
+        return EntryRepository.findById(id).orElse(null);
+    }
+
+    public void deleteJournalEntry(ObjectId id) {
+        EntryRepository.deleteById(id);
+    }
+
+    public boolean updateJournalEntry(ObjectId id, JournalObject newJournal) {
+        JournalObject oldJournal = EntryRepository.findById(id).orElse(null);
+        if(oldJournal != null){
+            oldJournal.setTitle(newJournal.getTitle() != null && newJournal.getTitle() != "" ? newJournal.getTitle() : oldJournal.getTitle());
+            oldJournal.setContent(newJournal.getContent() != null && newJournal.getContent() != "" ? newJournal.getContent() : oldJournal.getContent());
+        }
+
+//        if(oldJournal != null){
+//            if( newJournal.getTitle() != null && newJournal.getTitle() != "" && !oldJournal.getTitle().equals(newJournal.getTitle())){
+//                oldJournal.setTitle(newJournal.getTitle());
+//            }
+//            if(newJournal.getContent() != null && newJournal.getContent() != "" && !oldJournal.getContent().equals(newJournal.getContent())){
+//                oldJournal.setContent(newJournal.getContent());
+//            }
+//        }
+
+        EntryRepository.save(oldJournal);
+        return true;
+    }
+
+
+
+
+
+
+}

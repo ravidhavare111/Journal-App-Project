@@ -1,0 +1,52 @@
+package com.engineeringdigest.SB2_journalApp.controller;
+import com.engineeringdigest.SB2_journalApp.entity.JournalObject;
+import com.engineeringdigest.SB2_journalApp.service.journalEntryService;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/journal")
+public class journalEntryController {
+
+    @Autowired
+    journalEntryService entryService;
+
+
+    //POST
+    @PostMapping("/add")
+    public boolean addJournalEntity(@RequestBody JournalObject newJournal){
+        entryService.addJournalEntry(newJournal);
+        return true;
+    }
+
+    //GET (all entry)
+    @GetMapping("/all")
+    public List<JournalObject> getJournalEntry() {
+        return entryService.getAllJournalEntries();
+    }
+
+    //GET (1 entry)
+    @GetMapping("/one/{id}")
+    public JournalObject getJournalEntry(@PathVariable ObjectId id) {
+        return entryService.getJournalEntry(id);
+    }
+
+    //DELETE
+    @DeleteMapping("/delete/{id}")
+    public boolean deleteJournalEntity(@PathVariable ObjectId id){
+        entryService.deleteJournalEntry(id);
+        return true;
+    }
+
+    //PUT
+    @PutMapping("/update/{id}")
+    public boolean updateJournalEntity(@PathVariable ObjectId id, @RequestBody JournalObject newJournal){
+        return entryService.updateJournalEntry(id, newJournal);
+    }
+}
