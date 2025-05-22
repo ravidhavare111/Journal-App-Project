@@ -5,6 +5,8 @@ import com.engineeringdigest.SB2_journalApp.repository.journalEntryRepository;
 import com.sun.jdi.request.MethodEntryRequest;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -42,6 +44,9 @@ public class journalEntryService {
         if(oldJournal != null){
             oldJournal.setTitle(newJournal.getTitle() != null && newJournal.getTitle() != "" ? newJournal.getTitle() : oldJournal.getTitle());
             oldJournal.setContent(newJournal.getContent() != null && newJournal.getContent() != "" ? newJournal.getContent() : oldJournal.getContent());
+
+            EntryRepository.save(oldJournal);
+            return true;
         }
 
 //        if(oldJournal != null){
@@ -53,8 +58,8 @@ public class journalEntryService {
 //            }
 //        }
 
-        EntryRepository.save(oldJournal);
-        return true;
+        return false;
+
     }
 
 
