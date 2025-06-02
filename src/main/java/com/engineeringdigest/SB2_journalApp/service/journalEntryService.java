@@ -1,18 +1,15 @@
 package com.engineeringdigest.SB2_journalApp.service;
 
 import com.engineeringdigest.SB2_journalApp.entity.JournalObject;
+import com.engineeringdigest.SB2_journalApp.entity.UserObject;
 import com.engineeringdigest.SB2_journalApp.repository.journalEntryRepository;
-import com.sun.jdi.request.MethodEntryRequest;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class journalEntryService {
@@ -20,23 +17,55 @@ public class journalEntryService {
     @Autowired
     journalEntryRepository EntryRepository;
 
+    @Autowired
+    userEntryService userEntryService;
 
 
-    public void addJournalEntry(JournalObject newJournal) {
-        newJournal.setDate(LocalDateTime.now());
-        EntryRepository.save(newJournal);
+    @Transactional
+    public void addJournalEntry(JournalObject newJournal, String userName) {
+        try {
+            newJournal.setDate(LocalDateTime.now());
+            JournalObject journal = EntryRepository.save(newJournal);
+            UserObject user = userEntryService.getUserEntry(userName);
+            user.getJournalList().add(journal);
+//            user.setUserName(null);
+            userEntryService.addUserEntry(user);
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+
     }
 
     public List<JournalObject> getAllJournalEntries() {
         return EntryRepository.findAll();
     }
 
-    public JournalObject getJournalEntry(ObjectId id) {
-        return EntryRepository.findById(id).orElse(null);
+    public JournalObject getJournalEntry(String userName, ObjectId id) {
+
+        UserObject user = userEntryService.getUserEntry(userName);
+        List<JournalObject> temp = user.getJournalList();
+        for(JournalObject J : temp){
+            if(J.getId().equals(id)){
+                return J;
+            }
+        }
+        return null;
+//        return EntryRepository.findById(id).orElse(null);
     }
 
-    public void deleteJournalEntry(ObjectId id) {
-        EntryRepository.deleteById(id);
+    public boolean deleteJournalEntry(String userName, ObjectId id) {
+
+        JournalObject tempObject = getJournalEntry(userName, id);
+        if(tempObject != null){
+            EntryRepository.deleteById(id);
+            UserObject user = userEntryService.getUserEntry(userName);
+            user.getJournalList().removeIf(journal -> journal.getId().equals(id));
+            userEntryService.addUserEntry(user);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean updateJournalEntry(ObjectId id, JournalObject newJournal) {
